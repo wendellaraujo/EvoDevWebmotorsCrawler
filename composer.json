@@ -1,0 +1,20 @@
+{
+  "name": "evodev/web-motors-crawler",
+  "description": "Crawler for search all Brands, Models and Version of vehicle in Webmotors website (http://www.webmotors.com.br)",
+  "license": "MIT",
+  "autoload": {
+    "psr-4": {
+      "EvoDev\\WebMotorsCrawler\\": "src/"
+    }
+  },
+  "authors": [
+    {
+      "name": "Valentim Araújo",
+      "email": "valentim_araujo@yahoo.com.br"
+    }
+  ],
+  "minimum-stability": "dev",
+  "require": {
+    "illuminate/support": "^5.4"
+  }
+}
