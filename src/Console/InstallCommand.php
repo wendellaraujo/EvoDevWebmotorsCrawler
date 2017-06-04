@@ -23,10 +23,8 @@ class InstallCommand extends BaseCommand
      *
      * @return void
      */
-    public function fire()
+    public function handle()
     {
-        // TODO: Verificar uma forma de rodar apenas a migrations do package
-        $this->call('migrate:refresh', ['--path' => 'packages/EvoDev/WebMotorsCrawler/src/migrations/']);
-        //$this->line("<fg=yellow>Starting data base seed</>   " .  __DIR__ . '/../migrations');
+        $this->line("<fg=yellow>Starting data base seed</> " . getcwd());
     }
 }

@@ -14,7 +14,7 @@ class CreateWebmotorsCarVersionsTable extends Migration
     public function up()
     {
         Schema::create('webmotors_car_versions', function (Blueprint $table) {
-            $table->increments('id');
+            $table->bigIncrements('id');
             $table->string('name');
             $table->timestamps();
         });

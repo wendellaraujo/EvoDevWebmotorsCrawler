@@ -3,6 +3,7 @@
 namespace EvoDev\WebMotorsCrawler;
 
 use Illuminate\Support\ServiceProvider;
+use Illuminate\Foundation\AliasLoader;
 use EvoDev\WebMotorsCrawler\Console\InstallCommand;
 
 /**
@@ -15,6 +16,13 @@ class WebMotorsCrawlerServiceProvider extends ServiceProvider
     {
         $this->app->bind('evodev-web-motors-crawler', function ($app) {
             return new WebMotorsCrawler;
+        });
+
+        $this->app->register(\Ixudra\Curl\CurlServiceProvider::class);
+
+        $this->app->booting(function() {
+            $loader = AliasLoader::getInstance();
+            $loader->alias("Curl", \Ixudra\Curl\Facades\Curl::class);
         });
 
         $this->registerCommands();
