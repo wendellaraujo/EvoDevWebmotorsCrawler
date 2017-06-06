@@ -68,7 +68,6 @@ class WebMotorsCrawler
         $url = str_replace('[BRAND]', urlencode($brand), $this->activeModels);
         $response = Curl::to($url)->get();
         $responseDecode = json_decode($response);
-        dd($responseDecode);
 
         if (count($responseDecode)) {
             if ($createJsonFile) {
