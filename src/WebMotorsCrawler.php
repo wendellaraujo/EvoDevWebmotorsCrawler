@@ -30,7 +30,7 @@ class WebMotorsCrawler
                 foreach ($lot as $brand) {
                     if (!in_array($brand->N, $brandIgnore)) {
                         $brandIgnore[] = $brand->N;
-                        if ($brand->N) {
+                        if ($brand->N == 'ALFA ROMEO') {
                             $models = $this->getAllModelsByBrands($brand->N, true);
                             if (count($models)) {
                                 $this->getVersions($brand->N, $models, true);
@@ -67,8 +67,10 @@ class WebMotorsCrawler
     public function getAllModelsByBrands($brand, $createJsonFile = false)
     {
         $brand = strtoupper($brand);
-        $response = Curl::to(str_replace('[BRAND]', $brand, $this->activeModels))->get();
+        $url = str_replace('[BRAND]', urlencode($brand), $this->activeModels);
+        $response = Curl::to($url)->get();
         $responseDecode = json_decode($response);
+        dd($responseDecode);
 
         if (count($responseDecode)) {
             if ($createJsonFile) {
@@ -106,7 +108,7 @@ class WebMotorsCrawler
         $brand = $this->removeCharacters(strtoupper($brand));
         $model = strtoupper($model);
         $url = str_replace(
-            ['[MODEL]', '[YEARINIT]', '[YEAREND]',], [$model, $yearInit, $yearEnd],
+            ['[MODEL]', '[YEARINIT]', '[YEAREND]',], [urlencode($model), $yearInit, $yearEnd],
             $this->activeVersions);
         $response = Curl::to($url)->get();
         $responseDecode = json_decode($response);
