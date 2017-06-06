@@ -24,37 +24,28 @@ class WebMotorsCrawler
 
         $brands = $this->getAllBrands(true);
         $brandIgnore = [];
-        $modelsList = [];
 
         if ($brands) {
-            foreach ($brands->Principal as $brand) {
-                $brandIgnore[] = $brand->N;
-                if ($brand->N) {
-                    $models = $this->getAllModelsByBrands($brand->N, true);
-                    $modelsList = $models;
-                }
-            }
-
-//            foreach ($brands->Common as $brand) {
-//                if (!in_array($brand->N, $brandIgnore)) {
-//                    $brandIgnore[] = $brand->N;
-//                    if ($brand->N) {
-//                        $models = $this->getAllModelsByBrands($brand->N, true);
-//                        $modelsList = array_merge($modelsList, $models);
-//                    }
-//                }
-//            }
-        }
-
-        if ($modelsList) {
-            foreach ($modelsList as $model) {
-                if($model->N) {
-                    $this->getAllVersionsByModel($model->N, '', '', true);
+            foreach ($brands as $lot) {
+                foreach ($lot as $brand) {
+                    if (!in_array($brand->N, $brandIgnore)) {
+                        $brandIgnore[] = $brand->N;
+                        if ($brand->N) {
+                            $models = $this->getAllModelsByBrands($brand->N, true);
+                            if (count($models)) {
+                                $this->getVersions($brand->N, $models, true);
+                            }
+                        }
+                    }
                 }
             }
         }
     }
 
+    /**
+     * @param bool $createJsonFile
+     * @return mixed
+     */
     public function getAllBrands($createJsonFile = false)
     {
         $response = Curl::to($this->activeBrands)->get();
@@ -62,12 +53,17 @@ class WebMotorsCrawler
 
         if (count($responseDecode)) {
             if ($createJsonFile) {
-                Storage::put('webmotors-crawler/brands.json', $response);
+                Storage::put('webmotors-crawler/BRANDS.json', $response);
             }
         }
         return json_decode($response);
     }
 
+    /**
+     * @param $brand
+     * @param bool $createJsonFile
+     * @return mixed
+     */
     public function getAllModelsByBrands($brand, $createJsonFile = false)
     {
         $brand = strtoupper($brand);
@@ -76,34 +72,65 @@ class WebMotorsCrawler
 
         if (count($responseDecode)) {
             if ($createJsonFile) {
-                Storage::put('webmotors-crawler/models/' . $this->removeCharacters(utf8_decode($brand)) . '-models.json', $response);
+                Storage::put('webmotors-crawler/models/' . $this->removeCharacters($brand) . '/MODELS.json', $response);
             }
         }
 
         return $responseDecode;
     }
 
-    public function getAllVersionsByModel($model, $yearInit = '', $yearEnd = '', $createJsonFile = false)
+    /**
+     * @param $brand
+     * @param $modelsList
+     * @param bool $createJsonFile
+     */
+    public function getVersions($brand, $modelsList, $createJsonFile = false)
     {
+        foreach ($modelsList as $model) {
+            if ($model->N) {
+                $this->getAllVersionsByModel($brand, $model->N, '', '', $createJsonFile);
+            }
+        }
+    }
+
+    /**
+     * @param $brand
+     * @param $model
+     * @param string $yearInit
+     * @param string $yearEnd
+     * @param bool $createJsonFile
+     * @return mixed
+     */
+    public function getAllVersionsByModel($brand, $model, $yearInit = '', $yearEnd = '', $createJsonFile = false)
+    {
+        $brand = $this->removeCharacters(strtoupper($brand));
         $model = strtoupper($model);
-        $response = Curl::to(str_replace(
-                ['[MODEL]', '[YEARINIT]', '[YEAREND]',], [$model, $yearInit, $yearEnd],
-                $this->activeModels)
-        )->get();
+        $url = str_replace(
+            ['[MODEL]', '[YEARINIT]', '[YEAREND]',], [$model, $yearInit, $yearEnd],
+            $this->activeVersions);
+        $response = Curl::to($url)->get();
         $responseDecode = json_decode($response);
 
         if (count($responseDecode)) {
             if ($createJsonFile) {
-                Storage::put('webmotors-crawler/models/versions/' . $this->removeCharacters(utf8_decode($model)) . '-versions.json', $response);
+                Storage::put('webmotors-crawler/models/' . $brand . '/versions/' . $this->removeCharacters($model) . '-versions.json', $response);
             }
         }
 
         return $responseDecode;
     }
 
-    public function removeCharacters($string)
+    /**
+     * @param $string
+     * @return mixed|string
+     */
+    private function removeCharacters($string)
     {
-        $newString = preg_replace("/[^a-zA-Z0-9_.]/", "", strtr($string, "áàãâéêíóôõúüçÁÀÃÂÉÊÍÓÔÕÚÜÇ ", "aaaaeeiooouucAAAAEEIOOOUUC_"));
+        if ($string == 'CITROËN') {
+            $newString = 'CITROEN';
+        } else {
+            $newString = preg_replace("/[^a-zA-Z0-9_.]/", "", strtr($string, "áàãâäéêëíïóôõöúüçÁÀÃÂÄÉÊËÍÏÓÔÕÖÚÜÇ ", "aaaaaeeeiioo0ouuucAAAAAEEEIIOOOOUUUC_"));
+        }
         return $newString;
     }
 }
