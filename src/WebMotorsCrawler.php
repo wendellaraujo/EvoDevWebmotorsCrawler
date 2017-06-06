@@ -30,11 +30,9 @@ class WebMotorsCrawler
                 foreach ($lot as $brand) {
                     if (!in_array($brand->N, $brandIgnore)) {
                         $brandIgnore[] = $brand->N;
-                        if ($brand->N == 'ALFA ROMEO') {
-                            $models = $this->getAllModelsByBrands($brand->N, true);
-                            if (count($models)) {
-                                $this->getVersions($brand->N, $models, true);
-                            }
+                        $models = $this->getAllModelsByBrands($brand->N, true);
+                        if (count($models)) {
+                            $this->getVersions($brand->N, $models, true);
                         }
                     }
                 }
